@@ -27,7 +27,7 @@ canvas.addEventListener('mousemove', (event) => {
     ctx.stroke();
 });
 
-// 📌 Исправленная загрузка изображения (без искажений)
+// 📌 Исправленная загрузка изображения (без обрезки и растяжения)
 document.getElementById('upload').addEventListener('change', function (event) {
     const file = event.target.files[0];
     if (!file) {
@@ -39,36 +39,40 @@ document.getElementById('upload').addEventListener('change', function (event) {
     reader.onload = function (e) {
         const img = new Image();
         img.onload = function () {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Динамически изменяем размер canvas
+            const maxWidth = 400; // Максимальная ширина canvas
+            const maxHeight = 400; // Максимальная высота canvas
+            let newWidth = img.width;
+            let newHeight = img.height;
+
+            // Масштабируем изображение, если оно больше maxWidth/maxHeight
+            if (newWidth > maxWidth || newHeight > maxHeight) {
+                const scale = Math.min(maxWidth / newWidth, maxHeight / newHeight);
+                newWidth *= scale;
+                newHeight *= scale;
+            }
+
+            // Изменяем размер canvas под изображение
+            canvas.width = newWidth;
+            canvas.height = newHeight;
+
+            // Заполняем фон белым цветом (чтобы не было прозрачности)
             ctx.fillStyle = "white";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Вычисляем соотношение сторон
-            const aspectRatio = img.width / img.height;
-            let newWidth = canvas.width;
-            let newHeight = canvas.height;
-
-            if (aspectRatio > 1) {
-                newHeight = canvas.width / aspectRatio;
-            } else {
-                newWidth = canvas.height * aspectRatio;
-            }
-
-            const xOffset = (canvas.width - newWidth) / 2;
-            const yOffset = (canvas.height - newHeight) / 2;
-
-            ctx.drawImage(img, xOffset, yOffset, newWidth, newHeight);
+            // Отрисовываем изображение в центр canvas
+            ctx.drawImage(img, 0, 0, newWidth, newHeight);
         };
         img.src = e.target.result;
     };
     reader.readAsDataURL(file);
 });
 
-// 📌 Добавление кадра с текстом и пропорциями
+// 📌 Добавление кадра с текстом и сохранением размеров
 function addFrame() {
     const text = textOverlay.value.trim();
 
-    // Создаём временный canvas
+    // Создаём временный canvas с тем же размером, что и основной
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = canvas.width;
     tempCanvas.height = canvas.height;
@@ -96,7 +100,7 @@ function addFrame() {
     framePreview.appendChild(img);
 }
 
-// 📌 Генерация GIF с контролем размера и сжатием
+// 📌 Генерация GIF с динамическим размером
 function generateGIF() {
     if (frames.length === 0) {
         alert('Ошибка: Добавьте хотя бы один кадр!');
@@ -105,7 +109,7 @@ function generateGIF() {
 
     const gif = new GIF({
         workers: 2,
-        quality: 5,
+        quality: 15,
         width: canvas.width,
         height: canvas.height
     });
