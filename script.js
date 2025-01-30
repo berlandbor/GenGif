@@ -84,7 +84,7 @@ function addFrame() {
     tempCtx.drawImage(canvas, 0, 0);
 
     if (text) {
-        tempCtx.font = "5px Georgia";
+        tempCtx.font = "10px Georgia";
         tempCtx.fillStyle = "white";
         tempCtx.strokeStyle = "black";
         tempCtx.lineWidth = 3;
