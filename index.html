@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор GIF с текстом</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #f8f9fa; }
+        .container { width: 90%; max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+        canvas { border: 2px solid #333; cursor: crosshair; background: white; max-width: 100%; height: auto; }
+        .tools, .buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 10px 0; }
+        button { padding: 10px; border: none; cursor: pointer; border-radius: 5px; background-color: #007bff; color: white; font-size: 16px; transition: 0.3s; }
+        button:hover { background-color: #0056b3; }
+        .frames-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; margin-top: 10px; }
+        .frames-container img { width: 60px; border: 1px solid #ccc; border-radius: 5px; }
+        #output-gif { max-width: 100%; margin-top: 10px; border: 2px solid #333; }
+        input[type="text"], input[type="number"] { width: 100%; padding: 5px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Генератор GIF с текстом</h1>
+        <input type="file" id="upload" accept="image/*"><hr>
+        <canvas id="canvas"></canvas>
+
+        <div class="tools">
+            <label>Цвет: <input type="color" id="colorPicker" value="#000000"></label>
+            <label>Размер: <input type="range" id="brushSize" min="1" max="10" value="2"></label>
+            <label>Задержка (мс): <input type="number" id="frameDelay" min="100" max="2000" value="500"></label>
+        </div>
+
+
+        <input type="text" id="textOverlay" placeholder="Введите подпись для кадра..."><hr>
+
+        <div class="buttons">
+            <button onclick="addFrame()">Добавить кадр</button>
+            <button onclick="previewAnimation()">Просмотреть анимацию</button>
+            <button onclick="stopPreview()">Остановить анимацию</button>
+            <button onclick="generateGIF()">Создать GIF</button>
+            <button onclick="clearFrames()">Очистить</button>
+            <button onclick="downloadGIF()">Скачать GIF</button>
+        </div>
+
+        <h2>Кадры:</h2>
+        <div class="frames-container" id="frames-list"></div>
+
+        <h2>Готовый GIF:</h2>
+        <img id="output-gif">
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/gh/jnordberg/gif.js/dist/gif.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/jnordberg/gif.js/dist/gif.worker.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
