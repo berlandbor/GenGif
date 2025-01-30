@@ -8,6 +8,9 @@ const brushSize = document.getElementById('brushSize');
 const frameDelay = document.getElementById('frameDelay');
 const textOverlay = document.getElementById('textOverlay');
 
+let gifBlob = null; // Переменная для хранения готового GIF
+
+// Устанавливаем белый фон
 ctx.fillStyle = 'white';
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -72,7 +75,7 @@ document.getElementById('upload').addEventListener('change', function (event) {
 function addFrame() {
     const text = textOverlay.value.trim();
 
-    // Создаём временный canvas с тем же размером, что и основной
+    // Создаём временный canvas с размерами основного
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = canvas.width;
     tempCanvas.height = canvas.height;
@@ -92,11 +95,11 @@ function addFrame() {
         tempCtx.fillText(text, canvas.width / 2, canvas.height - 10);
     }
 
-    const frameData = tempCanvas.toDataURL("image/png", 0.8);
-    frames.push(frameData);
+    frames.push(tempCanvas); // Теперь добавляем `canvas`, а не `toDataURL()`
 
+    // Превью кадра
     const img = document.createElement('img');
-    img.src = frameData;
+    img.src = tempCanvas.toDataURL("image/gif"); // Отображаем как GIF
     framePreview.appendChild(img);
 }
 
@@ -115,12 +118,11 @@ function generateGIF() {
     });
 
     frames.forEach(frame => {
-        const img = new Image();
-        img.src = frame;
-        gif.addFrame(img, { delay: Number(frameDelay.value) });
+        gif.addFrame(frame, { delay: Number(frameDelay.value) });
     });
 
     gif.on('finished', function (blob) {
+        gifBlob = blob;
         outputGif.src = URL.createObjectURL(blob);
     });
 
@@ -141,7 +143,7 @@ function previewAnimation() {
     clearInterval(previewInterval);
 
     previewInterval = setInterval(() => {
-        outputGif.src = frames[previewIndex];
+        outputGif.src = frames[previewIndex].toDataURL("image/gif");
         previewIndex = (previewIndex + 1) % frames.length;
     }, Number(frameDelay.value));
 }
@@ -158,18 +160,23 @@ function clearFrames() {
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     outputGif.src = "";
+    gifBlob = null;
 }
 
-// 📌 Сохранение GIF
+// 📌 Сохранение GIF (теперь без ошибок)
 function downloadGIF() {
-    if (!outputGif.src) {
+    if (!gifBlob) {
         alert('Ошибка: Сначала создайте GIF!');
         return;
     }
 
+    // Генерируем уникальное имя файла (с датой и временем)
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const fileName = `animation_${timestamp}.gif`;
+
     const link = document.createElement('a');
-    link.href = outputGif.src;
-    link.download = 'animation.gif';
+    link.href = URL.createObjectURL(gifBlob); // Используем BLOB
+    link.download = fileName;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
